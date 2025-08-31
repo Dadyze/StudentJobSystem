@@ -14,16 +14,33 @@ try {
     Write-Error "Python is not installed. Please install Python 3.10+ from https://www.python.org/downloads/"
     exit 1
 }
-
-# --- Step 3: Check for psql ---
+# --- Step 3: Check for psql (PostgreSQL client) ---
 Write-Host "Checking for psql (PostgreSQL client)..."
 try {
     $psqlVersion = psql --version 2>&1
     Write-Host "Found psql: $psqlVersion"
 } catch {
-    Write-Warning "psql not found! You can install PostgreSQL via winget:"
-    Write-Host "  winget install --id PostgreSQL.PostgreSQL.15"
-    exit 1
+    Write-Warning "psql not found! Attempting to add PostgreSQL to PATH..."
+    
+    # Add PostgreSQL bin folder to PATH
+    $pgPath = "C:\Program Files\PostgreSQL\15\bin"
+    if (Test-Path $pgPath) {
+        $env:Path += ";$pgPath"
+        Write-Host "Added PostgreSQL to PATH. Retrying..."
+        try {
+            $psqlVersion = psql --version 2>&1
+            Write-Host "Found psql: $psqlVersion"
+        } catch {
+            Write-Warning "Still cannot find psql. Please install PostgreSQL via winget:"
+            Write-Host "  winget install --id PostgreSQL.PostgreSQL.15"
+            exit 1
+        }
+    } else {
+        Write-Warning "PostgreSQL bin folder not found at $pgPath."
+        Write-Host "Please install PostgreSQL via winget:"
+        Write-Host "  winget install --id PostgreSQL.PostgreSQL.15"
+        exit 1
+    }
 }
 
 # --- Step 4: Remove old virtual environment ---
