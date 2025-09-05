@@ -11,7 +11,7 @@ try {
     $pythonVersion = python --version 2>&1
     Write-Host "Found Python: $pythonVersion"
 } catch {
-    Write-Error "Python is not installed. Please install Python 3.10+ from https://www.python.org/downloads/"
+    Write-Error "Python is not installed. Please install Python 3.10+ from https://www.python.org/downloads/ OR Windows Store"
     exit 1
 }
 # --- Step 3: Check for psql (PostgreSQL client) ---
