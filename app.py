@@ -286,7 +286,7 @@ def loginadmin():
                 return redirect(url_for('adminHome'))
             else:
                 # Account doesnt exist or username/password incorrect
-                flash('Incorrect username/password')
+                flash('Incorrect username/password1')
         else:
             # Account doesnt exist or username/password incorrect
             flash('Incorrect username/password')

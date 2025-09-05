@@ -8,7 +8,7 @@ $DB_pass = "elhad123"
 # --- Step 2: Check for Python ---
 Write-Host "Checking for Python..."
 try {
-    $pythonVersion = python --version 2>&1
+    $pythonVersion = python3 --version 2>&1
     Write-Host "Found Python: $pythonVersion"
 } catch {
     Write-Error "Python is not installed. Please install Python 3.10+ from https://www.python.org/downloads/"
@@ -23,7 +23,7 @@ try {
     Write-Warning "psql not found! Attempting to add PostgreSQL to PATH..."
     
     # Add PostgreSQL bin folder to PATH
-    $pgPath = "C:\Program Files\PostgreSQL\15\bin"
+    $pgPath = "C:\Program Files\PostgreSQL\17\bin"
     if (Test-Path $pgPath) {
         $env:Path += ";$pgPath"
         Write-Host "Added PostgreSQL to PATH. Retrying..."
@@ -52,8 +52,7 @@ if (Test-Path "venv") {
 }
 
 Write-Host "Installing Python dependencies..."
-python -m pip install Flask Flask-Session Flask-Mail Flask-SQLAlchemy Flask-WTF `
-email-validator psycopg2-binary Flask-Caching python-dotenv pyautogui
+python3 -m pip install Flask Flask-Session Flask-Mail Flask-SQLAlchemy Flask-WTF email-validator psycopg2-binary Flask-Caching python-dotenv pyautogui
 
 # --- Step 6: Start PostgreSQL service ---
 Write-Host "Starting PostgreSQL service..."
@@ -101,6 +100,9 @@ $envContent | Out-File -Encoding ASCII ".env"
 
 
 # --- Step 10: Create fresh virtual environment ---
+Write-Host "Deleting old virtual environments..."
+Get-ChildItem -Path . -Recurse -Directory -Filter venv | Remove-Item -Recurse -Force
+
 Write-Host "Creating virtual environment..."
 python3 -m venv venv
 
