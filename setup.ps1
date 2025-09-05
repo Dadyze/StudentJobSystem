@@ -37,8 +37,7 @@ try {
         }
     } else {
         Write-Warning "PostgreSQL bin folder not found at $pgPath."
-        Write-Host "Please install PostgreSQL via winget:"
-        Write-Host "  winget install --id PostgreSQL.PostgreSQL.15"
+        Write-Host "Please install PostgreSQL"
         exit 1
     }
 }
