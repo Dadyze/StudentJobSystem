@@ -1,6 +1,6 @@
 from flask import Flask, request, session, redirect, url_for, render_template, flash
 from flask_session import Session
-from flask_mail import Mail,Message
+from flask_mail import Message
 import os
 import psycopg2
 import psycopg2 #pip install psycopg2
@@ -14,19 +14,12 @@ import json
 import random
 
 
-
 app = Flask(__name__)
 
 
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
-app.config['MAIL_SERVER']='smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'mayank17.mewar@gmail.com'
-app.config['MAIL_PASSWORD'] = 'haspcijdgvgjvuli'
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
-mail=Mail(app)
+
 
 
 
@@ -155,30 +148,7 @@ def temp():
        cur.execute("SELECT regNo FROM PG where branch=(%s)",(c,))
        regNo=cur.fetchall()
        branch.append(regNo)
-    #return branch
-
-
-    #for regNo in branch:
-    #   for r in regNo:
-    #      for i in r:
-    #         if len(str(i))!=0:
-    #           #return i
-    #           cur.execute("SELECT * FROM Student where regNo=(%s)",(str(i),))
-    #           #return str(cur.fetchall())
-    #           details=cur.fetchall()
-    #           listemails.append(details[0][4])
-
-    #return listemails
-
-    #return redirect(url_for('add_job'))
-
-
-    #for m in listemails:
-
-    #msg = Message('Hello', sender = 'mayank17.mewar@gmail.com', recipients = ['dikshant_m210670ca@nitc.ac.in'])
-    #msg.body = "This is the email body"
-    #mail.send(msg)
-         #time.sleep(10)
+   
     return redirect(url_for('add_job'))
 
 
@@ -467,7 +437,7 @@ def create():
         cgpa = request.form['cgpa']
         fa = request.form['fa']
         sem = request.form['cursem']
-
+        branch = request.form['course']  # use dropdown directly
 
         #conn = get_db_connection()
         conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
@@ -485,53 +455,17 @@ def create():
             (regno,"")
             )
 
-          if typee=='UG':
-           ch1=regno[0]
-           ch2=regno[-2]
-           ch3=regno[-1]
-           ch1=ch1+ch2+ch3
-           branch=""
-           if ch1=="BME":
-              branch="Bachelor of Technology, Mechanical Engineering"
-           elif ch1=="BCE":
-              branch="Bachelor of Technology, Chemical Engineering"
-           elif ch1=="BCS":
-              branch="Bachelor of Technology, Computer Science Engineering"
-           elif ch1=="BEE":
-              branch="Bachelor of Technology, Electrical Engineering"
-           elif ch1=="BEC":
-              branch="Bachelor of Technology, Electronics and Communication Engineering"
-
-           cur.execute('INSERT INTO UG (regNo, branch, semester)' 'values (%s, %s, %s)',
-		        (regno, branch, sem
-		        )
-		      )
-
+            # Insert into UG or PG table based on type
+          if typee == 'UG':
+                cur.execute(
+                    'INSERT INTO UG (regNo, branch, semester) VALUES (%s, %s, %s)',
+                    (regno, branch, sem)
+                )
           else:
-           ch1=regno[0]
-           ch2=regno[-2]
-           ch3=regno[-1]
-           ch1=ch1+ch2+ch3
-           branch=""
-
-           if ch1=="MCA":
-              branch="Master in Computer Applications"
-           elif ch1=="MME":
-              branch="Master of Technology, Mechanical Engineering"
-           elif ch1=="MCE":
-              branch="Master of Technology, Chemical Engineering"
-           elif ch1=="MCS":
-              branch="Master of Technology, Computer Science Engineering"
-           elif ch1=="MEE":
-              branch="Master of Technology, Electrical Engineering"
-           elif ch1=="MEC":
-              branch="Master of Technology, Electronics and Communication Engineering"
-
-           cur.execute('INSERT INTO PG (regNo, branch, semester)' 'values (%s, %s, %s)',
-                 (regno, branch, sem
-                 )
-               )
-
+                cur.execute(
+                    'INSERT INTO PG (regNo, branch, semester) VALUES (%s, %s, %s)',
+                    (regno, branch, sem)
+                )
 
           conn.commit()
           cur.close()
@@ -643,58 +577,92 @@ def edit():
 
 
 
-
 @app.route('/update/', methods=('GET', 'POST'))
 def update():
+    if session.get("username") is None:
+        return redirect(url_for('login'))
 
-    if session.get("username") == None:
-       return redirect(url_for('login'))
-
+    regno = session['username']
     cur = conn.cursor()
-    #return request.method
+    conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+
     if request.method == 'POST':
-        cgpa = request.form['cgpa']
-        cursem = request.form['cursem']
+        # Get form values
+        fname       = request.form['fname']
+        lname       = request.form['lname']
+        year        = request.form['year']
+        email       = request.form['email']
+        phone       = request.form['phone']
+        address     = request.form['address']
+        cgpa        = request.form['cgpa']
+        cursem      = request.form['cursem']
+        branch      = request.form['course']       # dropdown
+        course_type = request.form['type']         # new type UG/PG
+        fa          = request.form['fa']
 
-        #return cgpa+cursem
+        # Get existing type from DB
+        cur.execute('SELECT type FROM Student WHERE regNo = %s', (regno,))
+        typ_old = cur.fetchone()[0]
 
-        cur.execute('SELECT type from Student WHERE regNo = (%s)',(session['username'],))
-        typee=cur.fetchall()
-        typ=typee[0][0]
+        try:
+            # Update Student table
+            cur.execute("""
+                UPDATE Student
+                SET firstname = %s,
+                    lastname  = %s,
+                    dob       = %s,
+                    email     = %s,
+                    phoneno   = %s,
+                    address   = %s,
+                    cgpa      = %s,
+                    fa        = %s,
+                    type      = %s
+                WHERE regNo = %s
+            """, (fname, lname, year, email, phone, address, cgpa, fa, course_type, regno))
 
-        #conn = get_db_connection()
-        conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-        cur = conn.cursor()
-        cur.execute("SELECT 1")
+            # Handle UG <-> PG changes
+            if typ_old == course_type:
+                # Type unchanged: update branch/semester in the same table
+                if course_type == 'UG':
+                    cur.execute("UPDATE UG SET branch=%s, semester=%s WHERE regNo=%s",
+                                (branch, cursem, regno))
+                else:
+                    cur.execute("UPDATE PG SET branch=%s, semester=%s WHERE regNo=%s",
+                                (branch, cursem, regno))
+            else:
+                # Type changed: move record to new table
+                if typ_old == 'UG':
+                    cur.execute("DELETE FROM UG WHERE regNo=%s", (regno,))
+                    cur.execute("INSERT INTO PG (regNo, branch, semester) VALUES (%s, %s, %s)",
+                                (regno, branch, cursem))
+                else:
+                    cur.execute("DELETE FROM PG WHERE regNo=%s", (regno,))
+                    cur.execute("INSERT INTO UG (regNo, branch, semester) VALUES (%s, %s, %s)",
+                                (regno, branch, cursem))
 
-        cur.execute("Update Student set cgpa = %s where regNo = %s",(cgpa,session['username'],))
+            conn.commit()
+            flash("Profile Updated Successfully!")
 
-        if typ=='UG':
-           cur.execute("Update UG set semester = %s where regNo = %s",(cursem,session['username'],))
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error updating profile: {str(e)}")
 
-        else:
-           cur.execute("Update PG set semester = %s where regNo = %s",(cursem,session['username'],))
+    # Fetch updated Student details
+    cur.execute('SELECT * FROM Student WHERE regNo=%s', (regno,))
+    details = cur.fetchall()
 
-        conn.commit()
+    # Determine current type
+    cur.execute('SELECT type FROM Student WHERE regNo=%s', (regno,))
+    typ = cur.fetchone()[0]
 
-    cur.execute('SELECT * from Student WHERE regNo = (%s)',(session['username'],))
-    details=cur.fetchall()
-
-    cur.execute('SELECT type from Student WHERE regNo = (%s)',(session['username'],))
-    typee=cur.fetchall()
-    #return typee
-    typ=typee[0][0]
-
-    if typ=='UG':
-       cur.execute('SELECT * from UG WHERE regNo = (%s)',(session['username'],))
-       ugdetails=cur.fetchall()
-       flash("Profile Updated")
-       return render_template('view.html',details=details,ugdetails=ugdetails)
+    if typ == 'UG':
+        cur.execute('SELECT * FROM UG WHERE regNo=%s', (regno,))
+        ugdetails = cur.fetchall()
+        return render_template('view.html', details=details, ugdetails=ugdetails)
     else:
-       cur.execute('SELECT * from PG WHERE regNo = (%s)',(session['username'],))
-       pgdetails=cur.fetchall()
-       flash("Profile Updated")
-       return render_template('view.html',details=details,pgdetails=pgdetails)
+        cur.execute('SELECT * FROM PG WHERE regNo=%s', (regno,))
+        pgdetails = cur.fetchall()
+        return render_template('view.html', details=details, pgdetails=pgdetails)
 
 
 

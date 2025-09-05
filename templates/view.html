@@ -140,12 +140,12 @@
 		                          {% if details[0][8]=='UG' %}
 		                            <div class="media">
 		                                <label>Course</label>
-		                                <p>{{ugdetails[0][1]}}</p>
+		                                <p>{{ ugdetails[0][1] | replace(',', '<br>') | safe }}</p>
 		                            </div>
 		                          {% else %}
 		                            <div class="media">
 		                                <label>Course</label>
-		                                <p>{{pgdetails[0][1]}}</p>
+		                                <p>{{ pgdetails[0][1] | replace(',', '<br>') | safe }}</p>
 		                            </div>
 		                          {% endif %}   
 		                            <div class="media">

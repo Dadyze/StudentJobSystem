@@ -20,18 +20,18 @@
             <div class="form-holder">
                 <div class="form-content">
                     <div class="form-items">
-                        <form class="was-validated" action="{{ url_for('update') }}" on method="post">
+                        <form class="was-validated" action="{{ url_for('update') }}" method="post">
                             <h3 class="header">Edit your Details</h3>
                             <div class="col-md-12">
-                               <input class="form-control" type="text" name="regno" placeholder="Registration Number" minlength='9' maxlength='9' value="{{details[0][0]}}" disabled>
+                               <input class="form-control" type="text" name="regno" placeholder="Registration Number" minlength='9' maxlength='9' value="{{details[0][0]}}"  >
                             </div>
 
                             <div class="col-md-12">
-                               <input class="form-control" type="text" name="fname" value="{{details[0][1]}}" placeholder="First Name" disabled>
+                               <input class="form-control" type="text" name="fname" value="{{details[0][1]}}" placeholder="First Name"  >
                             </div>
                             
                             <div class="col-md-12">
-                               <input class="form-control" type="text" name="lname" value="{{details[0][2]}}" placeholder="Last Name" disabled>
+                               <input class="form-control" type="text" name="lname" value="{{details[0][2]}}" placeholder="Last Name"  >
                             </div>
 
 
@@ -39,22 +39,22 @@
 
                             <div>
                               <label for="bdaymonth">Enter Date Of Birth </label>
-                              <input type="date" id="year" name="year" min="1996-01-01" max="2002-12-31" disabled>	
+                              <input type="date" id="year" name="year" value="{{details[0][3]}}"  min="1996-01-01" max="2002-12-31"  >	
 		      	    </div>
 
                             
                             <div class="col-md-12">
-                                <input class="form-control" type="email" name="email" value="{{details[0][4]}}" placeholder="E-mail Address" disabled>
+                                <input class="form-control" type="email" name="email" value="{{details[0][4]}}" placeholder="E-mail Address"  >
                             </div>                            
                             
                             
                             <div class="col-md-12">
-                                <input class="form-control" type="tel" name="phone" placeholder="Phone Number" type="tel" pattern="^\d{10}$" value="{{details[0][5]}}" disabled>
+                                <input class="form-control" type="tel" name="phone" placeholder="Phone Number" type="tel"  value="{{details[0][5]}}"  >
                             </div>
                             
                             
                             <div class="col-md-12">
-                                <input class="form-control" type="" name="address" value="{{details[0][6]}}" placeholder="Address" pattern="([A-Z])\w+" disabled>
+                                <input class="form-control" type="" name="address" value="{{details[0][6]}}" placeholder="Address"  >
                             </div>
                             
                             
@@ -65,7 +65,23 @@
                                  <div class="invalid-feedback">CGPA field cannot be blank!</div>
                             </div>
 
+  <!-- Type of Course -->
+                        <div class="form-group">
+                            <label>Type of Course: </label><br>
+                            <input type="radio" class="btn-check" name="type" id="ug" value="UG" required>
+                            <label class="btn btn-outline-secondary btn-sm" for="ug">UG</label>
 
+                            <input type="radio" class="btn-check" name="type" id="pg" value="PG" required>
+                            <label class="btn btn-outline-secondary btn-sm" for="pg">PG</label>
+                        </div>
+
+                        <!-- Course Dropdown -->
+                        <div class="form-group">
+                            <label for="course">Select Course:</label>
+                            <select class="form-control" name="course" id="course" required>
+                                <option value="" disabled selected>Select your course</option>
+                            </select>
+                        </div>
                             
 {% if details[0][8]=='UG' %}          
                             <div class="col-md-12">
@@ -86,7 +102,7 @@
 
                             
                             <div class="col-md-12">
-                                <input class="form-control" type="text" name="fa" placeholder="Faculty Advisor" minlength="10" value="{{details[0][11]}}" disabled>
+                                <input class="form-control" type="text" name="fa" placeholder="Faculty Advisor" minlength="10" value="{{details[0][11]}}"  >
                             </div>
              
                            
@@ -110,6 +126,47 @@
         </div>
         
     </div>
+
+    <!-- JavaScript for dynamic dropdown -->
+<script>
+    const ugCourses = [
+        "Bachelor of Technology, Mechanical Engineering",
+        "Bachelor of Technology, Chemical Engineering",
+        "Bachelor of Technology, Computer Science Engineering",
+        "Bachelor of Technology, Electrical Engineering",
+        "Bachelor of Technology, Electronics and Communication Engineering"
+    ];
+
+    const pgCourses = [
+        "Master in Computer Applications",
+        "Master of Technology, Mechanical Engineering",
+        "Master of Technology, Chemical Engineering",
+        "Master of Technology, Computer Science Engineering",
+        "Master of Technology, Electrical Engineering",
+        "Master of Technology, Electronics and Communication Engineering"
+    ];
+
+    const courseSelect = document.getElementById('course');
+    const typeRadios = document.querySelectorAll('input[name="type"]');
+
+    typeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            // Clear previous options
+            courseSelect.innerHTML = '<option value="" disabled selected>Select your course</option>';
+
+            // Choose UG or PG courses
+            const courses = this.value === 'UG' ? ugCourses : pgCourses;
+
+            // Populate dropdown
+            courses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course;
+                option.textContent = course;
+                courseSelect.appendChild(option);
+            });
+        });
+    });
+</script>
 
 {% endblock %}
 
